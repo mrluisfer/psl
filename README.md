@@ -1,6 +1,8 @@
 # psl (Public Suffix List)
 
 [![Node.js CI](https://github.com/lupomontero/psl/actions/workflows/node.js.yml/badge.svg)](https://github.com/lupomontero/psl/actions/workflows/node.js.yml)
+[![npm version](https://img.shields.io/npm/v/psl-mrluisfer.svg?style=for-the-badge&color=blue)](https://www.npmjs.com/package/@mrluisfer/psl)
+[![npm downloads](https://img.shields.io/npm/dt/psl-mrluisfer.svg?style=for-the-badge&color=green)](https://www.npmjs.com/package/@mrluisfer/psl)
 
 `psl` is a `JavaScript` domain name parser based on the
 [Public Suffix List](https://publicsuffix.org/).
@@ -11,6 +13,9 @@ and kindly provided by [Comodo](https://www.comodo.com/).
 
 Cross browser testing provided by
 [<img alt="BrowserStack" width="160" src="./browserstack-logo.svg" />](https://www.browserstack.com/)
+
+This implementation is tested against the
+[test data hosted by Mozilla](http://mxr.mozilla.org/mozilla-central/source/netwerk/test/unit/data/test_psl.txt?raw=1).
 
 ## What is the Public Suffix List?
 
@@ -25,7 +30,7 @@ A "public suffix" is one under which Internet users can directly register names.
 Some examples of public suffixes are ".com", ".co.uk" and "pvt.k12.wy.us". The
 Public Suffix List is a list of all known public suffixes.
 
-Source: http://publicsuffix.org
+Source: [http://publicsuffix.org](http://publicsuffix.org)
 
 ## Installation
 
@@ -46,7 +51,7 @@ npm install psl
 From version `v1.13.0` you can now import `psl` as ESM.
 
 ```js
-import psl from 'psl';
+import psl from "psl";
 ```
 
 #### CommonJS
@@ -55,7 +60,7 @@ If your project still uses CommonJS, you can continue importing the module like
 in previous versions.
 
 ```js
-const psl = require('psl');
+const psl = require("psl");
 ```
 
 ### Browser
@@ -71,12 +76,12 @@ In modern browsers you can also import the ESM directly from a `CDN`. For
 example:
 
 ```js
-import psl from 'https://unpkg.com/psl@latest/dist/psl.mjs';
+import psl from "https://unpkg.com/psl@latest/dist/psl.mjs";
 ```
 
 #### UMD / CommonJS
 
-Finally, you can still download [`dist/psl.umd.cjs`](https://raw.githubusercontent.com/lupomontero/psl/main/dist/psl.umd.cjs)
+Finally, you can still download [`dist/psl.umd.cjs`](https://raw.githubusercontent.com/mrluisfer/psl/main/dist/psl.umd.cjs)
 and include it in a script tag.
 
 ```html
@@ -89,7 +94,7 @@ loader.
 
 The script is also available on most popular CDNs. For example:
 
-* https://unpkg.com/psl@latest/dist/psl.umd.cjs
+- [https://unpkg.com/psl@latest/dist/psl.umd.cjs](https://unpkg.com/psl@latest/dist/psl.umd.cjs)
 
 ## API
 
@@ -98,148 +103,67 @@ The script is also available on most popular CDNs. For example:
 Parse domain based on Public Suffix List. Returns an `Object` with the following
 properties:
 
-* `tld`: Top level domain (this is the _public suffix_).
-* `sld`: Second level domain (the first private part of the domain name).
-* `domain`: The domain name is the `sld` + `tld`.
-* `subdomain`: Optional parts left of the domain.
+- `tld`: Top level domain (this is the _public suffix_).
+- `sld`: Second level domain (the first private part of the domain name).
+- `domain`: The domain name is the `sld` + `tld`.
+- `subdomain`: Optional parts left of the domain.
 
 #### Examples
 
-Parse domain without subdomain:
-
 ```js
-import psl from 'psl';
+import psl from "psl";
 
-const parsed = psl.parse('google.com');
+const parsed = psl.parse("google.com");
 console.log(parsed.tld); // 'com'
 console.log(parsed.sld); // 'google'
 console.log(parsed.domain); // 'google.com'
 console.log(parsed.subdomain); // null
 ```
 
-Parse domain with subdomain:
-
-```js
-import psl from 'psl';
-
-const parsed = psl.parse('www.google.com');
-console.log(parsed.tld); // 'com'
-console.log(parsed.sld); // 'google'
-console.log(parsed.domain); // 'google.com'
-console.log(parsed.subdomain); // 'www'
-```
-
-Parse domain with nested subdomains:
-
-```js
-import psl from 'psl';
-
-const parsed = psl.parse('a.b.c.d.foo.com');
-console.log(parsed.tld); // 'com'
-console.log(parsed.sld); // 'foo'
-console.log(parsed.domain); // 'foo.com'
-console.log(parsed.subdomain); // 'a.b.c.d'
-```
+---
 
 ### `psl.get(domain)`
 
 Get domain name, `sld` + `tld`. Returns `null` if not valid.
 
-#### Examples
-
 ```js
-import psl from 'psl';
+import psl from "psl";
 
-// null input.
-psl.get(null); // null
-
-// Mixed case.
-psl.get('COM'); // null
-psl.get('example.COM'); // 'example.com'
-psl.get('WwW.example.COM'); // 'example.com'
-
-// Unlisted TLD.
-psl.get('example'); // null
-psl.get('example.example'); // 'example.example'
-psl.get('b.example.example'); // 'example.example'
-psl.get('a.b.example.example'); // 'example.example'
-
-// TLD with only 1 rule.
-psl.get('biz'); // null
-psl.get('domain.biz'); // 'domain.biz'
-psl.get('b.domain.biz'); // 'domain.biz'
-psl.get('a.b.domain.biz'); // 'domain.biz'
-
-// TLD with some 2-level rules.
-psl.get('uk.com'); // null);
-psl.get('example.uk.com'); // 'example.uk.com');
-psl.get('b.example.uk.com'); // 'example.uk.com');
-
-// More complex TLD.
-psl.get('c.kobe.jp'); // null
-psl.get('b.c.kobe.jp'); // 'b.c.kobe.jp'
-psl.get('a.b.c.kobe.jp'); // 'b.c.kobe.jp'
-psl.get('city.kobe.jp'); // 'city.kobe.jp'
-psl.get('www.city.kobe.jp'); // 'city.kobe.jp'
-
-// IDN labels.
-psl.get('食狮.com.cn'); // '食狮.com.cn'
-psl.get('食狮.公司.cn'); // '食狮.公司.cn'
-psl.get('www.食狮.公司.cn'); // '食狮.公司.cn'
-
-// Same as above, but punycoded.
-psl.get('xn--85x722f.com.cn'); // 'xn--85x722f.com.cn'
-psl.get('xn--85x722f.xn--55qx5d.cn'); // 'xn--85x722f.xn--55qx5d.cn'
-psl.get('www.xn--85x722f.xn--55qx5d.cn'); // 'xn--85x722f.xn--55qx5d.cn'
+psl.get("example.COM"); // 'example.com'
 ```
+
+---
 
 ### `psl.isValid(domain)`
 
-Check whether a domain has a valid Public Suffix. Returns a `Boolean` indicating
-whether the domain has a valid Public Suffix.
-
-#### Example
+Check whether a domain has a valid Public Suffix. Returns a `Boolean`.
 
 ```js
-import psl from 'psl';
+import psl from "psl";
 
-psl.isValid('google.com'); // true
-psl.isValid('www.google.com'); // true
-psl.isValid('x.yz'); // false
+psl.isValid("google.com"); // true
 ```
 
-## Testing and Building
+---
 
-There are tests both for Node.js and the browser (using [Playwright](https://playwright.dev)
-and [BrowserStack](https://www.browserstack.com/)).
+## Testing and Building
 
 ```sh
 # Run tests in node.
 npm test
-# Run tests in browserstack.
-npm run test:browserstack
-
 # Update rules from publicsuffix.org
 npm run update-rules
-
-# Build ESM, CJS and UMD and create dist files
+# Build ESM, CJS and UMD
 npm run build
 ```
 
-Feel free to fork if you see possible improvements!
-
-## Acknowledgements
-
-* Mozilla Foundation's [Public Suffix List](https://publicsuffix.org/)
-* Thanks to Rob Stradling of [Comodo](https://www.comodo.com/) for providing
-  test data.
-* Inspired by [weppos/publicsuffix-ruby](https://github.com/weppos/publicsuffix-ruby)
+---
 
 ## License
 
 The MIT License (MIT)
 
-Copyright (c) 2014-2024 Lupo Montero <lupomontero@gmail.com>
+Copyright (c) 2025 mrluisfer
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
